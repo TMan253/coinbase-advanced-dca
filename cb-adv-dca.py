@@ -2,13 +2,85 @@ import configparser
 from json import dumps
 from coinbase.rest import RESTClient
 import uuid
-import math
+#import math
+import argparse
 
 CONFIG_FILE="config.ini"
-CONFIG=""
+CONFIG=None
 API_KEY=""
 API_SECRET=""
+ARGS=None
+DEBUG=True
+TEST_MODE=True
+PRODUCT = "BTC-USD"
+FUNDS = "100.00"
+LIMIT = 0
 
+
+def set_product(coin):
+    global PRODUCT
+    s_coin = str(coin)
+
+    match s_coin.lower():
+        case "b" | "btc" | "btc-usd":
+            PRODUCT = "BTC-USD"
+        case "e" | "eth" | "eth-usd":
+            PRODUCT = "ETH-USD"
+        case "s" | "sol" | "sol-usd":
+            PRODUCT = "SOL-USD"
+        case _:
+            if s_coin.find("-") == -1:
+                PRODUCT = s_coin + "-USD"
+            else:
+                PRODUCT = s_coin
+
+def process_cli_args():
+    global ARGS, DEBUG, TEST_MODE, FUNDS, LIMIT
+    parser = argparse.ArgumentParser(
+        description="Buys digital assets on Coinbase Advanced.",
+        epilog="Thanks for using %(prog)s at your own risk! :)")
+    use_opt = parser.add_argument_group("configuring purchases")
+    use_opt.add_argument("action", help="buy|test - live buy or simulation")
+    use_opt.add_argument("-c", "--coin", help="the asset to purchase, such as b|e|s|BTC|ETH|SOL|BTC-USD. Default BTC-USD.", default="BTC-USD")
+    use_opt.add_argument("-f", "--funds", help="the amount to spend. Default 100.00.", default="100.00")
+    use_opt.add_argument("-l", "--limit", help="0|1|5 - percent limit order discount. Default 0.0 (market order).", type=float, default=0.0)
+    #opt_opt = parser.add_argument_group("options")
+    parser.add_argument("-d", "--debug", action="store_true", help="toggle verbose logging")
+    parser.add_argument("--version", action="version", version="%(prog)s 0.1.0")
+    ARGS = parser.parse_args()
+    DEBUG = ARGS.debug
+    match str(ARGS.action).lower():
+        case "test":
+            TEST_MODE = True
+            print("TEST MODE ACTIVATED.")
+        case "buy":
+            TEST_MODE = False
+        case _:
+            print("Impossible action - quitting.")
+            exit(1)
+    set_product(ARGS.coin)
+    FUNDS = ARGS.funds
+    LIMIT = ARGS.limit
+
+# '''
+# ### Usage
+#       nodejs ./dcaCoinbasePro/dca-client.js (--help|-h)
+#       nodejs ./dcaCoinbasePro/dca-client.js --config env key secret passphrase
+#       nodejs ./dcaCoinbasePro/dca-client.js --showConfig env key
+#       nodejs ./dcaCoinbasePro/dca-client.js (test|prod) [buy] key
+#     Arguments:
+#       --config     - create encrypted API key.
+#         env        - 'test' or 'prod'.
+#         key        - API key.
+#         secret     - API secret.
+#         passphrase - API passphrase.
+#       --showConfig - show a configuration.
+#         env        - 'test' or 'prod'.
+#         key        - encryption key.
+#       test         - use sandbox API (default).
+#       prod         - use production API.
+#       buy          - order a purchase trade.
+#       key          - encryption key.
 
 def update_config_file(CONFIG_FILE, section, option, value):
     # Read the INI file.
@@ -74,7 +146,8 @@ def place_limit_buy(client, str_market, str_quantity, fp_price):
         client_order_id=order_uuid,
         product_id=str_market,
         base_size=str_quantity,
-        limit_price=fp_price
+        limit_price=fp_price,
+        post_only=True
     )
 
     limit_order_id = limit_order["order_id"]
@@ -84,29 +157,48 @@ def cancel_order(client, order_id):
     client.cancel_orders(order_ids=[order_id])
 
 def main():
-    fetch_config_file(CONFIG_FILE)
-    print(CONFIG)
-    print(CONFIG.get("DEFAULT", "asdf"))
-    #print(API_KEY)
-    #print(API_SECRET)
+    process_cli_args()
 
-    #test Coinbase Advanced
-    client = RESTClient(api_key=API_KEY, api_secret=API_SECRET)
-    #test_coinbase(client)
-    #random_uuid = gen_uuid()
-    #print(random_uuid)
+    fetch_config_file(CONFIG_FILE)
+    if DEBUG:
+        print(CONFIG)
+        print(API_KEY)
+        print(API_SECRET)
+
+    client = RESTClient(api_key=API_KEY, api_secret=API_SECRET, verbose=DEBUG)
+    
+    # Test Coinbase Advanced.
+    if DEBUG:
+        test_coinbase(client)
+        random_uuid = gen_uuid()
+        print(random_uuid)
+    
+    ## Examples follow:
     ## Market buy $10 of BTC.
     #place_market_buy(client, "BTC-USD", "10")
     ## Limit buy 20k sats at $64k/BTC.
     #place_limit_buy(client, "BTC-USD", "0.0002", "64000")
-    #cancel_order(client, order_id)
 
-    product = client.get_product("BTC-USD")
-    btc_usd_price = float(product["price"])
-    low_btc_usd_price = str(math.floor(btc_usd_price * 0.95))
-    print(low_btc_usd_price)
-    order_id = place_limit_buy(client, "BTC-USD", "0.0002", low_btc_usd_price)
-    cancel_order(client, order_id)
+    product = client.get_product(PRODUCT)
+    asset_price = float(product["price"])
+    print(f"Current {PRODUCT} market price is ${asset_price}.")
+    if LIMIT == 0.0:
+        # When no limit order discount is requested, use a market order.
+        if TEST_MODE:
+            print(f"I would have market bought ${FUNDS} of {PRODUCT}.")
+        else:
+            place_market_buy(client, PRODUCT, FUNDS)
+    else:
+        # Otherwise place a limit order at a discounted price.
+        #low_price = str(math.floor(asset_price * (100.0-LIMIT)/100.0))
+        low_price = round(asset_price * (100.0-LIMIT)/100.0, 2)
+        quantity = str(round(float(FUNDS) / float(low_price), 8))
+        str_low_price = str(low_price)
+        if TEST_MODE:
+            print(f"I would have limit ordered {quantity} of {PRODUCT} at {str_low_price} (${float(quantity)*low_price}).")
+        else:
+            order_id = place_limit_buy(client, PRODUCT, quantity, str_low_price)
+            cancel_order(client, order_id)
 
 
 main()
