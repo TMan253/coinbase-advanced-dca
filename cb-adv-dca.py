@@ -198,7 +198,7 @@ def main():
             print(f"I would have limit ordered {quantity} of {PRODUCT} at {str_low_price} (${float(quantity)*low_price}).")
         else:
             order_id = place_limit_buy(client, PRODUCT, quantity, str_low_price)
-            print(f"Limit order #{order_id} for {quantity} {PRODUCT} @ {str_low_price} (${float(quantity)*low_price}).")
+            print(f"Limit order {order_id} placed for {quantity} {PRODUCT} @ {str_low_price} (${float(quantity)*low_price}).")
             cancel_order(client, order_id)
 
 
