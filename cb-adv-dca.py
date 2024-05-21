@@ -1,8 +1,16 @@
+# This file uses the Coinbase Advanced Python SDK
+#   to invoke REST services for placing BUY side orders.
+# See the Coinbase docs here:
+#   - https://docs.cdp.coinbase.com/advanced-trade/docs/sdk-rest-client-trade/
+#   - https://docs.cdp.coinbase.com/advanced-trade/reference/retailbrokerageapi_postorder/
+#   - https://github.com/coinbase/coinbase-advanced-py/blob/master/coinbase/rest/orders.py#L333
+#   - https://docs.cloud.coinbase.com/advanced-trade/docs/welcome
+
 import configparser
 from json import dumps
 from coinbase.rest import RESTClient
 import uuid
-#import math
+import math
 import argparse
 
 CONFIG_FILE="config.ini"
@@ -30,9 +38,9 @@ def set_product(coin):
             PRODUCT = "SOL-USD"
         case _:
             if s_coin.find("-") == -1:
-                PRODUCT = s_coin + "-USD"
+                PRODUCT = s_coin.upper() + "-USD"
             else:
-                PRODUCT = s_coin
+                PRODUCT = s_coin.upper()
 
 def process_cli_args():
     global ARGS, DEBUG, TEST_MODE, FUNDS, LIMIT
@@ -132,8 +140,14 @@ def place_market_buy(client, str_market, str_amount):
 
     order_id = order["order_id"]
 
-    fills = client.get_fills(order_id=order_id)
-    print(dumps(fills, indent=2))
+    if bool(order["success"]):
+        if DEBUG:
+            print(order)
+        fills = client.get_fills(order_id=order_id)
+        print(dumps(fills, indent=2))
+    else:
+        print(f"Error placing market order #{order_uuid}:")
+        print(order)
     return order_id
 
 # @arg client - an opened Coinbase RESTClient connection object.
@@ -151,6 +165,12 @@ def place_limit_buy(client, str_market, str_quantity, fp_price):
     )
 
     limit_order_id = limit_order["order_id"]
+    if bool(limit_order["success"]):
+        if DEBUG:
+            print(limit_order)
+    else:
+        print(f"Error placing limit order #{order_uuid}:")
+        print(limit_order)
     return limit_order_id
 
 def cancel_order(client, order_id):
@@ -180,8 +200,11 @@ def main():
     #place_limit_buy(client, "BTC-USD", "0.0002", "64000")
 
     product = client.get_product(PRODUCT)
+    if DEBUG:
+        print(product)
+    str_price = str(product["price"])
     asset_price = float(product["price"])
-    print(f"Current {PRODUCT} market price is ${asset_price}.")
+    print(f"Current {PRODUCT} market price is ${str_price}.")
     if LIMIT == 0.0:
         # When no limit order discount is requested, use a market order.
         if TEST_MODE:
@@ -191,15 +214,21 @@ def main():
     else:
         # Otherwise place a limit order at a discounted price.
         #low_price = str(math.floor(asset_price * (100.0-LIMIT)/100.0))
-        low_price = round(asset_price * (100.0-LIMIT)/100.0, 2)
-        quantity = str(round(float(FUNDS) / float(low_price), 8))
+        str_base_increment = str(product["base_increment"])
+        fl_base_increment = float(product["base_increment"])
+        units_mantissa_len = len(str_base_increment) - str_base_increment.find(".") - 1
+        price_mantissa_len = len(str_price) - str_price.find(".") - 1
+        low_price = round(asset_price * (100.0-LIMIT)/100.0, price_mantissa_len)
+        # quantity = str(round(float(FUNDS) / float(low_price), units_mantissa_len))  # May round over budget
+        quantity = str(round(math.floor(float(FUNDS) / float(low_price) / fl_base_increment) * fl_base_increment, units_mantissa_len))
         str_low_price = str(low_price)
         if TEST_MODE:
-            print(f"I would have limit ordered {quantity} of {PRODUCT} at {str_low_price} (${float(quantity)*low_price}).")
+            print(f"I would have limit ordered {quantity} of {PRODUCT} at {str_low_price} (${round(float(quantity)*low_price, price_mantissa_len)}).")
         else:
             order_id = place_limit_buy(client, PRODUCT, quantity, str_low_price)
-            print(f"Limit order {order_id} placed for {quantity} {PRODUCT} @ {str_low_price} (${float(quantity)*low_price}).")
-            cancel_order(client, order_id)
+            print(f"Limit order {order_id} placed for {quantity} {PRODUCT} @ {str_low_price} (${round(float(quantity)*low_price, price_mantissa_len)}).")
+            print("May the odds be ever in your favor.")
+            #cancel_order(client, order_id)
 
 
 main()
