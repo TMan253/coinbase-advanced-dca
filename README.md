@@ -34,6 +34,37 @@ This tool requires an API key for your Coinbase Advanced account.  To create an 
 3. Name the key, choose the account it has access to, and enable `Trade` access.  Click `Create & download`.
 4. Retain the key and secret in a safe manner because it is a bearer token that allows access to your account!
 
+### Runtime setup for FreeBSD
+Use the following steps to deploy on a FreeBSD host:
+1. su - root
+2. pkg update -f
+3. pkg install git
+3. pkg install python
+4. python -V  # Assuming this return v3.9, then:
+5. pkg install py39-pip
+6. curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+7. vi .cshrc
+8. Append the following to the PATH export: `$HOME/.cargo/bin`
+9. Log out and log back in to source the new PATH.
+10. pip install coinbase-advanced-py  # requires wheel group access
+11. su - dca   # Assuming service account 'dca'
+12. Append the following to the PATH export: `/root/.cargo/bin`
+13. git clone https://github.com/TMan253/coinbase-advanced-dca.git
+14. cd coinbase-advanced-dca
+15. python -m venv foo
+16. . foo/bin/activate
+17. pip --version
+18. pip install --upgrade pip
+19. pip --version
+20. vi config.ini
+21. Add the following contents, but substitute your API key and secret within the quotation marks, and then save the file and exit:
+```
+[API]
+API Key = "yourKeyHere"
+API Secret = "yourSecretHere"
+```
+22. python cb-adv-dca.py test -c BTC -f 100.00
+
 ### Docker dev environment setup
 `TBD`
 

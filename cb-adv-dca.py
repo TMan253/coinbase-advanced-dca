@@ -27,20 +27,20 @@ LIMIT = 0
 
 def set_product(coin):
     global PRODUCT
-    s_coin = str(coin)
+    s_coin = str(coin).upper()
 
-    match s_coin.lower():
-        case "b" | "btc" | "btc-usd":
+    match s_coin:
+        case "B" | "BTC" | "BTC-USD":
             PRODUCT = "BTC-USD"
-        case "e" | "eth" | "eth-usd":
+        case "E" | "ETH" | "ETH-USD":
             PRODUCT = "ETH-USD"
-        case "s" | "sol" | "sol-usd":
+        case "S" | "SOL" | "SOL-USD":
             PRODUCT = "SOL-USD"
         case _:
             if s_coin.find("-") == -1:
-                PRODUCT = s_coin.upper() + "-USD"
+                PRODUCT = s_coin + "-USD"
             else:
-                PRODUCT = s_coin.upper()
+                PRODUCT = s_coin
 
 def process_cli_args():
     global ARGS, DEBUG, TEST_MODE, FUNDS, LIMIT
