@@ -89,14 +89,12 @@ API Secret = "yourSecretHere"
 #    *    *    *    *    *     COMMAND
 #----+----+----+----+----+-----+------------------------------------------------
 #    *    *    *    *    *     /coinbase-advanced-dca/dca.sh coinbase-advanced-dca/bin/activate "asdf" "me@example.com" "test -c b -f 100.00"
-#    0   11    *    *    1     /coinbase-advanced-dca/dca.sh coinbase-advanced-dca/bin/activate "asdf" "me@example.com" "buy -c b -f 100.00"
-#    0   11    *    *    1,4   /coinbase-advanced-dca/dca.sh coinbase-advanced-dca/bin/activate "asdf" "me@example.com" "buy -c b -f 100.00"
-#    0   11    *    *    3     /coinbase-advanced-dca/dca.sh coinbase-advanced-dca/bin/activate "asdf" "me@example.com" "buy -c e -f 100.00"
-#    0   11    *    *    3,6   /coinbase-advanced-dca/dca.sh coinbase-advanced-dca/bin/activate "asdf" "me@example.com" "buy -c e -f 100.00"
-#    0   11    *    *    0     /coinbase-advanced-dca/dca.sh coinbase-advanced-dca/bin/activate "asdf" "me@example.com" "buy -c SEI-USD -f 50.00"
-#    0   11    *    *    2     /coinbase-advanced-dca/dca.sh coinbase-advanced-dca/bin/activate "asdf" "me@example.com" "buy -c s -f 100.00"
-#    0   11    *    *    5     /coinbase-advanced-dca/dca.sh coinbase-advanced-dca/bin/activate "asdf" "me@example.com" "buy -c SUI-USD -f 50.00"
-#    1   11    *    *    5     /coinbase-advanced-dca/dca.sh coinbase-advanced-dca/bin/activate "asdf" "me@example.com" "buy -c TIA-USD -f 50.00"
+#    0   16    *    *    0,4   /coinbase-advanced-dca/dca.sh coinbase-advanced-dca/bin/activate "asdf" "me@example.com" "buy -c b -f 100.00"
+#    0   16    *    *    3,6   /coinbase-advanced-dca/dca.sh coinbase-advanced-dca/bin/activate "asdf" "me@example.com" "buy -c e -f 100.00"
+#    1   16    *    *    4,6     /coinbase-advanced-dca/dca.sh coinbase-advanced-dca/bin/activate "asdf" "me@example.com" "buy -c s -f 100.00"
+#    2   16    *    *    4     /coinbase-advanced-dca/dca.sh coinbase-advanced-dca/bin/activate "asdf" "me@example.com" "buy -c SEI-USD -f 50.00"
+#    0   16    *    *    5     /coinbase-advanced-dca/dca.sh coinbase-advanced-dca/bin/activate "asdf" "me@example.com" "buy -c SUI-USD -f 50.00"
+#    1   16    *    *    5     /coinbase-advanced-dca/dca.sh coinbase-advanced-dca/bin/activate "asdf" "me@example.com" "buy -c TIA-USD -f 50.00"
 #    *    *    *    *    *     /coinbase-advanced-dca/dca.sh coinbase-advanced-dca/bin/activate "asdf" "me@example.com" "view"
 #
 #
