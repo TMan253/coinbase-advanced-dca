@@ -25,6 +25,27 @@ FUNDS = "100.00"
 LIMIT = 0
 
 
+def set_action(some_action):
+    ## match syntax isn't available until v3.10:
+    # match str(action).lower():
+    #     case "test":
+    #         TEST_MODE = True
+    #         print("TEST MODE ACTIVATED.")
+    #     case "buy":
+    #         TEST_MODE = False
+    #     case _:
+    #         print("Impossible action - quitting.")
+    #         exit(1)
+    action = str(some_action).lower()
+    if action == "test":
+        TEST_MODE = True
+        print("TEST MODE ACTIVATED.")
+    elif action == "buy":
+        TEST_MODE = False
+    else:
+        print(f"Impossible action '{some_action}' - quitting.")
+        exit(1)
+
 def set_product(coin):
     global PRODUCT
     s_coin = str(coin).upper()
@@ -68,15 +89,7 @@ def process_cli_args():
     parser.add_argument("--version", action="version", version="%(prog)s 0.1.0")
     ARGS = parser.parse_args()
     DEBUG = ARGS.debug
-    match str(ARGS.action).lower():
-        case "test":
-            TEST_MODE = True
-            print("TEST MODE ACTIVATED.")
-        case "buy":
-            TEST_MODE = False
-        case _:
-            print("Impossible action - quitting.")
-            exit(1)
+    set_action(ARGS.action)
     set_product(ARGS.coin)
     FUNDS = ARGS.funds
     LIMIT = ARGS.limit
