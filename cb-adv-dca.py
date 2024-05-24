@@ -29,18 +29,29 @@ def set_product(coin):
     global PRODUCT
     s_coin = str(coin).upper()
 
-    match s_coin:
-        case "B" | "BTC" | "BTC-USD":
-            PRODUCT = "BTC-USD"
-        case "E" | "ETH" | "ETH-USD":
-            PRODUCT = "ETH-USD"
-        case "S" | "SOL" | "SOL-USD":
-            PRODUCT = "SOL-USD"
-        case _:
-            if s_coin.find("-") == -1:
-                PRODUCT = s_coin + "-USD"
-            else:
-                PRODUCT = s_coin
+    ## match syntax isn't available until v3.10:
+    # match s_coin:
+    #     case "B" | "BTC" | "BTC-USD":
+    #         PRODUCT = "BTC-USD"
+    #     case "E" | "ETH" | "ETH-USD":
+    #         PRODUCT = "ETH-USD"
+    #     case "S" | "SOL" | "SOL-USD":
+    #         PRODUCT = "SOL-USD"
+    #     case _:
+    #         if s_coin.find("-") == -1:
+    #             PRODUCT = s_coin + "-USD"
+    #         else:
+    #             PRODUCT = s_coin
+    if s_coin == "B" or s_coin =="BTC" or s_coin == "BTC-USD":
+        PRODUCT = "BTC-USD"
+    elif s_coin == "E" or s_coin == "ETH" or s_coin == "ETH-USD":
+        PRODUCT = "ETH-USD"
+    elif s_coin == "S" or s_coin == "SOL" or s_coin == "SOL-USD":
+        PRODUCT = "SOL-USD"
+    elif s_coin.find("-") == -1:
+        PRODUCT = s_coin + "-USD"
+    else:
+        PRODUCT = s_coin
 
 def process_cli_args():
     global ARGS, DEBUG, TEST_MODE, FUNDS, LIMIT
