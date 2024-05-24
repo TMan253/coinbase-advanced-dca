@@ -26,6 +26,7 @@ LIMIT = 0
 
 
 def set_action(some_action):
+    global TEST_MODE
     ## match syntax isn't available until v3.10:
     # match str(action).lower():
     #     case "test":
@@ -75,7 +76,7 @@ def set_product(coin):
         PRODUCT = s_coin
 
 def process_cli_args():
-    global ARGS, DEBUG, TEST_MODE, FUNDS, LIMIT
+    global ARGS, DEBUG, FUNDS, LIMIT
     parser = argparse.ArgumentParser(
         description="Buys digital assets on Coinbase Advanced.",
         epilog="Thanks for using %(prog)s at your own risk! :)")
