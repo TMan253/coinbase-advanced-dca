@@ -44,7 +44,8 @@ then
   python cb-adv-dca.py "${EKEY}" >> "${LOG_FILE}" 2>&1
 else
   # The COMMAND argument is not quoted so that it can expand.
-  python cb-adv-dca.py ${COMMAND} "${EKEY}" >> "${LOG_FILE}" 2>&1
+  python cb-adv-dca.py ${COMMAND} >> "${LOG_FILE}" 2>&1
+  #python cb-adv-dca.py ${COMMAND} "${EKEY}" >> "${LOG_FILE}" 2>&1
 fi
 
 # Send the output when complete.
