@@ -163,11 +163,12 @@ def place_market_buy(client, str_market, str_amount):
         quote_size=str_amount
     )
 
-    order_id = order["order_id"]
+    order_id = "ERROR"
 
     if bool(order["success"]):
         if DEBUG:
             print(order)
+        order_id = order["success_response"]["order_id"]
         fills = client.get_fills(order_id=order_id)
         print(dumps(fills, indent=2))
     else:
@@ -189,10 +190,12 @@ def place_limit_buy(client, str_market, str_quantity, fp_price):
         post_only=True
     )
 
-    limit_order_id = limit_order["order_id"]
+    limit_order_id = "ERROR"
+
     if bool(limit_order["success"]):
         if DEBUG:
             print(limit_order)
+        limit_order_id = limit_order["success_response"]["order_id"]
     else:
         print(f"Error placing limit order #{order_uuid}:")
         print(limit_order)
